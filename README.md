@@ -8,7 +8,7 @@
 ## Docker image URL from Docker Hub 
 [dockerhub repo](https://hub.docker.com/repository/docker/gbedu/kodecamp-app)
 
-## A detailed report of the steps I followed.
+## A detailed report of the steps to follow.
 
 #### 1. Create a simple web application(Python FastAPI):
 
