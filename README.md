@@ -1,4 +1,3 @@
-# Task 7
 ## Screenshots of your working application.
 ![port 8080](images/kube-port-8080.png)
 ![docker publish](images/pod-service.png)
