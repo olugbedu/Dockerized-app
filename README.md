@@ -1,4 +1,4 @@
-# Dockerized App (Docker) and Container Orchestration (K8s)
+# Containerization (Docker) and Container Orchestration (K8s)
 
 In today's ever-changing technology landscape, companies are looking for reliable and scalable ways to run and manage software. And containers have transformed the way we deliver software.
 
