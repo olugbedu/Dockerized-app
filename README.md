@@ -9,6 +9,7 @@ Kubernetes has made it so much easier to manage and scale deployments according 
 ## Steps to follow.
 
 #### 1. Create a simple web application(Python FastAPI):
+You can use any framework of your choice, but here we used Python FastAPI.
 
 ```python
 from fastapi import FastAPI
@@ -42,18 +43,28 @@ EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-- Build the Docker image and run it locally to ensure it works correctly.
+- Build the Docker image run the `docker build -t "your-app"` command, then to ensure it works correctly run the `docker run -p 8000:8000 "your-app"` command. To confirm this works visit your local host `localhost:8000 ` on your browser.
 
 ![docker build](images/docker-build.png)
 ![docker publish](images/docker-publish.png)
-![Port 8000](images/dockerimage-port-8000.png)
+![Port 8000](images/dockerimage-Port-8000.png)
 
-- Tag it and Push the Docker image to a container registry (Docker Hub)
+- Tag it `docker tag "your-app" "docker-username/your-app"` and Push the Docker image to a container registry (Docker Hub) `docker push "docker-username/your-app"`.
 ![docker tag](images/docker-tag.png)
 ![docker push](images/docker-push.png)
 ![docker Hub](images/DockerHub-image.png)
 
 #### 3. Deploy the application to a Kubernetes cluster:
+
+##### Set Up the Kubernetes Cluster
+To deploy your application, you need to set up a Kubernetes Cluster that will run your pods and services. There are lot of clusters provided by multiple cloud providers like Google, Amazon and Microsoft. For this application, we will use `Minikube`.
+
+Minikube is a tool that lets your run a single-node K8s cluster on your computer. It is a personal playground for trying out Kubernetes in your system.
+
+Refer to [this](https://minikube.sigs.k8s.io/docs/start/) guide for setting up minikube on Mac or Windows. Check if Minikube was installed by running the `minikube version` command.
+
+Run the `minikube start` command to start a local Kubernetes cluster.
+
 ##### Create a Kubernetes manifest file for a Deployment to deploy the Docker image.
 
 `Deployment.yaml`
@@ -93,11 +104,11 @@ spec:
                 cpu: "500m"
 ```
 
-- spec: Describes the desired state of the deployment.
-- replicas: Specifies the desired number of replicas (instances) of the application to run, which is 1 in this case.
-- The selector and matchLabels fields specify labels that the deployment can identify the pods with.
-- template: Defines a template for your pod. in this case, `kodecamp-app` is the label with which the pod should be identified.
-- spec field under template describes the desired state of the pod, including the list of containers. In this case we have just one container, with the name `kodecamp-app`, and the image it should pull from my Docker Hub `gbedu/kodecamp-app`, and the port to which it is exposed. `imagePullPolicy` specifies the image pull policy. Here, I have used Always (always pull the latest image from the registry).
+- `spec`: Describes the desired state of the deployment.
+- `replicas`: Specifies the desired number of replicas (instances) of the application to run, which is 1 in this case.
+- The `selector` and `matchLabels` fields specify labels that the deployment can identify the pods with.
+- `template`: Defines a template for your pod. in this case, `kodecamp-app` is the label with which the pod should be identified.
+- `spec field under template` describes the desired state of the pod, including the list of containers. In this case we have just one container, with the name `kodecamp-app`, and the image it should pull from my Docker Hub `gbedu/kodecamp-app`, and the port to which it is exposed. `imagePullPolicy` specifies the image pull policy. Here, I have used Always (always pull the latest image from the registry).
 - resources: This section is used to specify the resource requests and limits for the containers in a pod. This helps Kubernetes manage resources efficiently and ensure that your application gets the resources it needs while preventing it from using too many resources. `Resource requests` are the `minimum` amount of resources that Kubernetes will allocate to the container. If the requested resources are not available, the pod will not be scheduled. `Resource limits` are the `maximum` amount of resources that the container can use. If the container tries to use more than the specified limits, Kubernetes will rescrict (throttle) it or, in the case of memory, potentially terminate the container.
 
 ##### Create a Kubernetes Service of type ClusterIP to expose the application.
@@ -121,23 +132,63 @@ spec:
     targetPort: 8000
   ```
 
-- Here, spec field describes the desired state of the Service which is of type Cluster IP.
-- selector: Specifies the label that identifies with the pod the service should direct traffic to.
-- ports: Specifies the list of ports that the service should expose.
-- protocol: Specifies the type of protocol allowed.
-- port: Specifies the port that the service listens on. External traffic will come to this port, while the targetPort specifies the port on the pods that the service should forward traffic to. In this case, the incoming traffic on the service's port 80 will be sent to the pods on port 8000.
+- Here, `spec` field describes the desired state of the Service which is of type `Cluster IP`.
+- `selector`: Specifies the label that identifies with the pod the service should direct traffic to.
+- `ports`: Specifies the list of ports that the service should expose.
+- `protocol`: Specifies the type of protocol allowed.
+- `port`: Specifies the port that the service listens on. External traffic will come to this port, while the targetPort specifies the port on the pods that the service should forward traffic to. In this case, the incoming traffic on the service's port 80 will be sent to the pods on port 8000.
 
-#### 4. Test the deployment:
-- Port-forward your service to a localhost port and access it through your web browser.
-![8080 terminal](images/port-8080-terminal.png)
+#### 4. Create the Pod, Deployment, and Service
+Use `kubectl apply` to apply the above configurations and create the pods, deployment, and service.
+
+`kubectl apply -f deployment.yaml`
+
+`kubectl apply -f service.yaml`
+
+`Alternatively`, you can also put both these configs in a single `manifest.yaml` file and run the apply command just once.
+
+`kubectl apply -f manifest.yaml`
+
+Check your pods, deployments, and services using the `kubectl get "commands"` ("pods", "service").
 ![output](images/pod-service.png)
 ![service](images/service.png)
+
+Make sure you have executed the `minikube start` command before applying any files, as you need to start a cluster to run your pods.
+
+You can see from the above output that the pod is running fine. If it shows 0/1 under READY, that means there was some issue while creating the container. You should check if your application is working properly before deploying again.
+
+You can also check the pod logs with the `kubectl logs` command.
+
+Minikube also provides a dashboard that shows all your pods, deployments, and services as a web UI. Run the `minikube dashboard` command and your browser will spring up the dashboard.
+
+#### 5. Test the deployment:
+- Port-forward your service to a localhost port and access it through your web browser. To do that run the `kubectl port-forward service/app-service 8080:80` command.
+![8080 terminal](images/port-8080-terminal.png)
+
 
 - Verify that the application displays the expected message. 
 ![port 8080](images/kube-port-8080.png)
 
+#### 6. Scaling Your Application
+Your application is up and running. With increasing demand, you may need to scale up your application to ensure optimal performance.
 
-## Bonus (Optional):
+To scale up your application, increase the number of replicas of your deployment by running the following command:
+
+`kubectl scale deployment <deployment-name> --replicas=<desired-number>`
+
+Specify the desired number of replicas and it will scale up your pods.
+
+`kubectl scale deployment your-app --replicas=4`
+
+After running the above command, run `kubectl get deployments` to see that the number of replicas has gone up.
+
+Alternatively, you can modify the Deployment YAML file by changing the number of replicas and running the kubectl apply command again.
+
+If you no longer need a large number of pods and want to scale down your application, just run the same command and specify a smaller number of replicas.
+
+`kubectl scale deployment your-app --replicas=2`
+
+### Bonus (Optional):
 - Configure a ConfigMap to externalize the message "Hello, Kubernetes!".
 
 `configmap.yaml`
@@ -198,3 +249,13 @@ def read_root():
 ## Docker image URL from Docker Hub 
 [dockerhub repo](https://hub.docker.com/repository/docker/gbedu/kodecamp-app)
 
+## Conclusion
+Kubernetes is a popular container orchestration platform. Having a strong grasp on its concepts helps you leverage this platform for your application.
+
+My objective was to provide a comprehensive, step by step guide on deploying your application to a Kubernetes cluster. I also set out to establish a foundation on some key concepts of Kubernetes that include pods, deployments, services and the cluster itself.
+
+I started with a simple Python app and packaged it into a Docker image. Once you were clear with the key concepts, I gave detailed steps right from installation and setting up the Kubernetes cluster to deploying your application as pods and exposing them through services.
+
+Kubernetes has taking over the cloud landscape and it is here to stay. I hope I was able to make Kubernetes easy for you. This will surely help you deploy your applications to any Kubernetes cluster, not just the ones I mentioned.
+
+If you are unable to understand the content or find the explanation unsatisfactory, let me know. New ideas are always appreciated! Feel free to connect with me on [Linkedin](https://www.linkedin.com/in/adedejiolugbedu/) . Till then, goodbye!
