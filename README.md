@@ -1,14 +1,12 @@
-# Dockerized App
-## Screenshots of your working application.
-![port 8080](images/kube-port-8080.png)
-![docker publish](images/pod-service.png)
-![service](images/service.png)
-![8080 terminal](images/port-8080-terminal.png)
+# Dockerized App (Docker) and Container Orchestration (K8s)
 
-## Docker image URL from Docker Hub 
-[dockerhub repo](https://hub.docker.com/repository/docker/gbedu/kodecamp-app)
+In today's ever-changing technology landscape, companies are looking for reliable and scalable ways to run and manage software. And containers have transformed the way we deliver software.
 
-## A detailed report of the steps to follow.
+Container orchestration platforms have made it possible to deploy and manage containerised applications. Kubernetes is one such platform that has been a game-changer for developers who are dealing with the challenges of application deployments.
+
+Kubernetes has made it so much easier to manage and scale deployments according to your needs. I am going to explain how to create a `Dockerfile`, `Docker image`, and `Deploy` it to a `Kubernetes cluster`, so get ready.
+
+## Steps to follow.
 
 #### 1. Create a simple web application(Python FastAPI):
 
@@ -191,5 +189,12 @@ def read_root():
     password = os.getenv('PASSWORD', 'defaultpassword')
     return {"message": message, "password": password}
 ```
+## Screenshots of your working application.
+![port 8080](images/kube-port-8080.png)
+![docker publish](images/pod-service.png)
+![service](images/service.png)
+![8080 terminal](images/port-8080-terminal.png)
 
+## Docker image URL from Docker Hub 
+[dockerhub repo](https://hub.docker.com/repository/docker/gbedu/kodecamp-app)
 
